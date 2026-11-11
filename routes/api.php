@@ -2,11 +2,16 @@
 
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\OutfitController;
+use App\Http\Controllers\StylesController;
+use App\Http\Controllers\SuggestionController;
 use App\Http\Controllers\WearController;
 use Illuminate\Support\Facades\Route;
 
 // API routes (REST, JSON)
 Route::middleware('auth:sanctum')->group(function () {
+    // Suggestion du jour
+    Route::get('/suggestion', SuggestionController::class);
+
     // Items
     Route::get('/items', [ItemController::class, 'index']);
     Route::post('/items', [ItemController::class, 'store']);
@@ -26,4 +31,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/wears', [WearController::class, 'store']);
     Route::get('/wears/{wear}', [WearController::class, 'show']);
     Route::delete('/wears/{wear}', [WearController::class, 'destroy']);
+
+    // Styles
+    Route::get('/styles', [StylesController::class, 'index']);
+    Route::post('/styles', [StylesController::class, 'store']);
 });

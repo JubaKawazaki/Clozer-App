@@ -1,11 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePage } from '@inertiajs/react';
 
 interface Item {
     id: number;
     name: string | null;
     photo_path: string;
+    thumb_path: string | null;
     categories: string[];
     weather: string[];
     styles: string[];
@@ -17,6 +18,8 @@ interface ItemsPageProps {
         data: Item[];
         current_page: number;
         last_page: number;
+        next_page_url: string | null;
+        prev_page_url: string | null;
     };
     filters: {
         category?: string;
@@ -29,8 +32,21 @@ export default function Items() {
     const [archived, setArchived] = useState(filters.archived);
     const [category, setCategory] = useState(filters.category || 'all');
 
-    // Placeholder pour les catégories (à remplacer par un appel API backend)
     const categories = ['all', 'headwear', 'outerwear', 'top', 'bottom', 'shoes'];
+
+    const filteredItems = items.data.filter((item: Item) => {
+        if (category !== 'all' && !item.categories.includes(category)) return false;
+        return true;
+    });
+
+    const fetchPage = (url: string) => {
+        fetch(url, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        }).then((r) => r.json()).then((data) => {
+            window.history.replaceState({}, '', url);
+            window.location.reload();
+        });
+    };
 
     return (
         <div>
@@ -79,10 +95,14 @@ export default function Items() {
 
             {/* Grille des pièces */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {items.data.map((item: Item) => (
-                    <div key={item.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                {filteredItems.map((item: Item) => (
+                    <Link
+                        key={item.id}
+                        href={route('items.show', { item: item.id })}
+                        className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                    >
                         <img
-                            src={item.photo_path}
+                            src={item.thumb_path ? `/storage/${item.thumb_path}` : `/storage/${item.photo_path}`}
                             alt={item.name || `Pièce ${item.id}`}
                             className="w-full h-64 object-cover"
                         />
@@ -101,29 +121,32 @@ export default function Items() {
                                 ))}
                             </div>
                         </div>
-                    </div>
+                    </Link>
                 ))}
             </div>
 
             {/* Pagination */}
             {items.last_page > 1 && (
                 <div className="mt-8 flex justify-center space-x-2">
-                    {Array.from({ length: items.last_page }, (_, i) => (
+                    {items.prev_page_url && (
                         <button
-                            key={i + 1}
-                            onClick={() => {
-                                // TODO: Implémenter la pagination
-                                alert(`Page ${i + 1} (à implémenter)`);
-                            }}
-                            className={`px-4 py-2 rounded-lg ${
-                                items.current_page === i + 1
-                                    ? 'bg-indigo-600 text-white'
-                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                            }`}
+                            onClick={() => fetchPage(items.prev_page_url!)}
+                            className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
                         >
-                            {i + 1}
+                            ← Précédent
                         </button>
-                    ))}
+                    )}
+                    <span className="px-4 py-2 text-gray-600 dark:text-gray-400">
+                        Page {items.current_page} / {items.last_page}
+                    </span>
+                    {items.next_page_url && (
+                        <button
+                            onClick={() => fetchPage(items.next_page_url!)}
+                            className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                        >
+                            Suivant →
+                        </button>
+                    )}
                 </div>
             )}
         </div>

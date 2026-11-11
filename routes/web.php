@@ -2,8 +2,11 @@
 
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\OutfitController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WearController;
 use Illuminate\Support\Facades\Route;
+
+require __DIR__.'/auth.php';
 
 // Routes Inertia (page web)
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -24,7 +27,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('/wears', 'wears')->name('wears.index');
     Route::get('/wears/create', [WearController::class, 'create'])->name('wears.create');
     Route::get('/wears/{wear}', [WearController::class, 'show'])->name('wears.show');
+
+    // Profil (update + delete)
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+// Alias pour les contrôleurs Breeze qui redirigent vers 'dashboard'
+Route::get('/dashboard', fn() => redirect('/'))->middleware(['auth', 'verified'])->name('dashboard');
 
 // API routes (REST, JSON)
 Route::middleware('auth:sanctum')->group(function () {

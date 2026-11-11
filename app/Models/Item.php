@@ -18,6 +18,7 @@ class Item extends Model
      * d'ici-là n'a que photo_path (le photo_path original reste inchangé).
      */
     protected $fillable = [
+        'user_id',
         'name',
         'photo_path',
         'thumb_path',

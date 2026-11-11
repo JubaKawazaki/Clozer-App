@@ -14,6 +14,7 @@ class Outfit extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'name',
         'photo_path',
         'last_worn_at',
